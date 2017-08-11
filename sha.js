@@ -26,13 +26,13 @@ hash.on('readable', () => {
       }
       if(found){
         debug(`found in file: ${filename} :(`);
-        cb(null, true);
+        cb(null, true, filename);
       } else {
         debug(`not found in file: ${filename}`);
-        cb(null, false);
+        cb(null, false, filename);
       }
     };
-    const call = par ? async.some : async.someSeries;
+    const call = par ? async.filter : async.filterSeries;
     call(filenames, (name, cb) => {
       debug(`Searching file: ${name}`);
       fs.stat(name, (err, stats) => {
@@ -48,8 +48,8 @@ hash.on('readable', () => {
       if(err){
         console.error(err);
       }
-      if(result){
-        console.log(`found :(`);
+      if(result.length){
+        console.log(`found in file ${result} :(`);
         process.exit(1);
       } else {
         console.log('Not found, but could still be compromised');

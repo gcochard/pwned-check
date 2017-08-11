@@ -3,8 +3,8 @@ const HASH_SIZE = 40;
 const LINE_LENGTH = 42;
 debug = require('util').debuglog('search');
 
-function checkNaN(...args){
-  return args.some(num=>{ return num > 0 == false && num < 0 == false && num != 0; });
+function checkArgs(...args){
+  return args.some(num=>{ return num < 0; });
 }
 
 module.exports = function radixSearchSha(needle, filename, cb){
@@ -26,7 +26,7 @@ module.exports = function radixSearchSha(needle, filename, cb){
       let beyond = false;
       let currChar = 0;
       function bucketSearch(start, bucket, len) {
-        if(checkNaN(start, bucket, len)){
+        if(checkArgs(start, bucket, len)){
           debug(`crap, nan found!\nstart: ${start}, bucket: ${bucket}, len: ${len}`);
           return cb(null, false);
         }
@@ -52,19 +52,18 @@ module.exports = function radixSearchSha(needle, filename, cb){
         }
         iterations++;
         fs.read(fd, buf, 0, HASH_SIZE, pos, (err, bytesRead/*, buf */) => {
-          let str = buf.toString();
-          if(visited[str]){
+          let currHash = buf.toString();
+          if(visited[currHash]){
             debug(`${filename}: loop detected`);
           }
-          visited[str] = true;
-          debug(`${filename} - pos: ${pos}\ncurrent hash: ${str}`);
-          // str is the hash
+          visited[currHash] = true;
+          debug(`${filename} - pos: ${pos}\ncurrent hash: ${currHash}`);
           let newbucket = bucket;
-          if(str < needle) {
+          if(currHash < needle) {
             pos += LINE_LENGTH;
-            debug(`${filename} - str < needle`);
+            debug(`${filename} - currHash < needle`);
             // we need to go further
-            if(str.slice(0,currChar) < needle.slice(0,currChar)){
+            if(currHash.slice(0,currChar) < needle.slice(0,currChar)){
               // we are not at the right bucket yet
               newbucket++;
               debug(`${filename} - we are not at the right bucket yet, start: ${pos}, newbucket: ${newbucket}, len: ${len}`);
@@ -77,7 +76,7 @@ module.exports = function radixSearchSha(needle, filename, cb){
                 len -= LINE_LENGTH;
                 newbucket = 0;
               }
-            } else if(str.slice(0,currChar) > needle.slice(0,currChar)){
+            } else if(currHash.slice(0,currChar) > needle.slice(0,currChar)){
               // we overran the bucket
               newbucket--;
               debug(`${filename} - we overran the bucket, start: ${pos}, newbucket: ${newbucket}, len: ${len}`);
@@ -91,15 +90,14 @@ module.exports = function radixSearchSha(needle, filename, cb){
               }
               newbucket = needle.charCodeAt(currChar) - 48;
               newbucket -= newbucket > 15 ? 7 : 0;
-              debug(`${filename} - bucket: ${newbucket}`);
               debug(`${filename} - in the right bucket, start: ${pos}, newbucket: ${newbucket}, len: ${len}`);
             }
             bucketSearch(pos, newbucket, len);
-          } else if(str > needle) {
-            debug(`${filename} - str > needle`);
+          } else if(currHash > needle) {
+            debug(`${filename} - currHash > needle`);
             beyond = true;
             // we need to step back
-            if(str.slice(0,currChar) < needle.slice(0,currChar)){
+            if(currHash.slice(0,currChar) < needle.slice(0,currChar)){
               // we are not at the right bucket yet
               newbucket++;
               debug(`${filename} - we are not at the right bucket yet, start: ${start}, newbucket: ${newbucket}, len: ${pos}`);
@@ -112,7 +110,7 @@ module.exports = function radixSearchSha(needle, filename, cb){
                 len -= LINE_LENGTH;
                 newbucket = 0;
               }
-            } else if(str.slice(0,currChar) > needle.slice(0,currChar)){
+            } else if(currHash.slice(0,currChar) > needle.slice(0,currChar)){
               // we overran the bucket
               newbucket--;
               debug(`${filename} - we overran the bucket, start: ${start}, newbucket: ${newbucket}, len: ${pos}`);
@@ -127,13 +125,11 @@ module.exports = function radixSearchSha(needle, filename, cb){
               newbucket = needle.charCodeAt(currChar) - 48;
               newbucket -= newbucket > 15 ? 7 : 0;
               debug(`${filename} - in the right bucket, start: ${start}, newbucket: ${newbucket}, len: ${pos}`);
-              debug(`${filename} - bucket: ${newbucket}`);
             }
             bucketSearch(start, newbucket, pos);
           } else {
             // ffffffffffffound!
             debug(`found after ${iterations} iterations`);
-            console.log(`found after ${iterations} iterations`);
             return cb(null, true);
           }
         });
