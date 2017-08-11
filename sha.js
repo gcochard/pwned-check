@@ -3,6 +3,7 @@ const tty = require('tty');
 const async = require('async');
 const crypto = require('crypto');
 const hash = crypto.createHash('sha1');
+const fetcher = require('./fetch.js');
 const find = require('./binsearch.js');
 const debug = require('util').debuglog('main');
 
@@ -36,10 +37,14 @@ hash.on('readable', () => {
     call(filenames, (name, cb) => {
       debug(`Searching file: ${name}`);
       fs.stat(name, (err, stats) => {
-        const done = find.bind(null, needle, name, findcb.bind(null, name, cb));
+        const done = (err) => {
+          if(err){
+            return cb(err);
+          }
+          find(needle, name, findcb.bind(null, name, cb));
+        }
         if(err && err.code == 'ENOENT'){
           console.log(`${name} not found, fetching...`);
-          let fetcher = require('./fetch.js');
           return fetcher(fetcher[name], done);
         }
         done();
@@ -50,11 +55,11 @@ hash.on('readable', () => {
       }
       if(result.length){
         console.log(`found in file ${result} :(`);
-        process.exit(1);
+        //process.exit(1);
       } else {
         console.log('Not found, but could still be compromised');
-        process.exit(0);
       }
+      process.exit(0);
     });
   }
 });
