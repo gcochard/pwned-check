@@ -4,10 +4,16 @@ const async = require('async');
 const crypto = require('crypto');
 const hash = crypto.createHash('sha1');
 const find = require('./binsearch.js');
+const debug = require('util').debuglog('main');
 
 let str = '';
 let filenames = ['pwned-passwords-1.0.txt','pwned-passwords-update-1.txt','pwned-passwords-update-2.txt'];
-const par = process.env.NODE_DEBUG != 'search';
+const par = (process.env.NODE_DEBUG||'').indexOf('search') < 0;
+if(par){
+  debug('running in parallel');
+} else {
+  debug('running in series');
+}
 hash.on('readable', () => {
   const data = hash.read();
   if(data){
@@ -19,16 +25,16 @@ hash.on('readable', () => {
         cb(err);
       }
       if(found){
-        console.log(`found in file: ${filename} :(`);
+        debug(`found in file: ${filename} :(`);
         cb(null, true);
       } else {
-        console.log(`not found in file: ${filename}`);
+        debug(`not found in file: ${filename}`);
         cb(null, false);
       }
     };
     const call = par ? async.some : async.someSeries;
     call(filenames, (name, cb) => {
-      console.log(`Searching file: ${name}`);
+      debug(`Searching file: ${name}`);
       fs.stat(name, (err, stats) => {
         const done = find.bind(null, needle, name, findcb.bind(null, name, cb));
         if(err && err.code == 'ENOENT'){
@@ -45,6 +51,9 @@ hash.on('readable', () => {
       if(result){
         console.log(`found :(`);
         process.exit(1);
+      } else {
+        console.log('Not found, but could still be compromised');
+        process.exit(0);
       }
     });
   }
