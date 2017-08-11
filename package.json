@@ -8,7 +8,8 @@
   },
   "author": "Greg Cochard <npm@gregcochard.com>",
   "license": "ISC",
-  "devDependencies": {
+  "dependencies": {
+    "async": "^2.5.0",
     "request": "^2.81.0"
   }
 }

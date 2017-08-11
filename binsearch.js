@@ -46,7 +46,7 @@ module.exports = function radixSearchSha(needle, filename, cb){
         // make sure the position is divisible by LINE_LENGTH to get a hash at the beginning
         let buf = Buffer.alloc(HASH_SIZE);
         // read HASH_SIZE bytes from pos, to make sure we have a complete hash
-        if(iterations > 100){
+        if(iterations > LINE_LENGTH*16){
           debug(`iterations going crazy, at ${iterations}`);
           return cb(new Error(`don't want to blow the stack`));
         }
@@ -64,16 +64,20 @@ module.exports = function radixSearchSha(needle, filename, cb){
             pos += LINE_LENGTH;
             debug(`${filename} - str < needle`);
             // we need to go further
-            if(str[currChar] < needle[currChar]){
+            if(str.slice(0,currChar) < needle.slice(0,currChar)){
               // we are not at the right bucket yet
               newbucket++;
               debug(`${filename} - we are not at the right bucket yet, start: ${pos}, newbucket: ${newbucket}, len: ${len}`);
               if(newbucket > 15){
                 debug(`${filename} - at the last bucket, incrementing start to cause jitter`);
                 pos += LINE_LENGTH;
-                newbucket = 1;
+                newbucket = 0;
+              } else if(newbucket < 0){
+                debug(`${filename} - at the first bucket, decrementing end to cause jitter`);
+                len -= LINE_LENGTH;
+                newbucket = 0;
               }
-            } else if(str[currChar] > needle[currChar]){
+            } else if(str.slice(0,currChar) > needle.slice(0,currChar)){
               // we overran the bucket
               newbucket--;
               debug(`${filename} - we overran the bucket, start: ${pos}, newbucket: ${newbucket}, len: ${len}`);
@@ -95,7 +99,7 @@ module.exports = function radixSearchSha(needle, filename, cb){
             debug(`${filename} - str > needle`);
             beyond = true;
             // we need to step back
-            if(str[currChar] < needle[currChar]){
+            if(str.slice(0,currChar) < needle.slice(0,currChar)){
               // we are not at the right bucket yet
               newbucket++;
               debug(`${filename} - we are not at the right bucket yet, start: ${start}, newbucket: ${newbucket}, len: ${pos}`);
@@ -103,8 +107,12 @@ module.exports = function radixSearchSha(needle, filename, cb){
                 debug(`${filename} - at the last bucket, decrementing start to cause jitter`);
                 start -= LINE_LENGTH;
                 newbucket-=2;
+              } else if(newbucket < 0){
+                debug(`${filename} - at the first bucket, decrementing end to cause jitter`);
+                len -= LINE_LENGTH;
+                newbucket = 0;
               }
-            } else if(str[currChar] > needle[currChar]){
+            } else if(str.slice(0,currChar) > needle.slice(0,currChar)){
               // we overran the bucket
               newbucket--;
               debug(`${filename} - we overran the bucket, start: ${start}, newbucket: ${newbucket}, len: ${pos}`);
