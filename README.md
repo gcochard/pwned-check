@@ -27,5 +27,10 @@ build the tree. Also note that this is only possible because the files are
 already sorted.
 
 
-
 Disclaimer: This is not an official Google project.
+
+## License
+
+Apache Version 2.0
+
+See [LICENSE](LICENSE)
