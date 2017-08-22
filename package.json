@@ -1,5 +1,5 @@
 {
-  "name": "pwnies",
+  "name": "pwned-check",
   "version": "1.0.0",
   "description": "Command line tool to determine if your passwords have been leaked (source data: haveibeenpwned.com)",
   "main": "sha.js",
