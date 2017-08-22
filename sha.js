@@ -4,57 +4,69 @@ const async = require('async');
 const crypto = require('crypto');
 const hash = crypto.createHash('sha1');
 const fetcher = require('./fetch.js');
-const find = require('./binsearch.js');
+const find = require('./bucketsearch.js');
 const debug = require('util').debuglog('main');
 
 let str = '';
 let filenames = ['pwned-passwords-1.0.txt','pwned-passwords-update-1.txt','pwned-passwords-update-2.txt'];
-const par = (process.env.NODE_DEBUG||'').indexOf('search') < 0;
+const par = (process.env.NODE_DEBUG||'').indexOf('par') < 0;
 if(par){
   debug('running in parallel');
 } else {
   debug('running in series');
 }
+
+function findHash(data, callback){
+  let needle = data.toString('hex').toUpperCase();
+  console.log(`Hashed password, attempting to locate...\n${needle}`);
+  const call = par ? async.detect : async.detectSeries;
+  call(filenames, (name, cb) => {
+    debug(`Searching file: ${name}`);
+    fs.stat(name, (err, stats) => {
+      const done = (err) => {
+        if(err){
+          return cb(err);
+        }
+        find(needle, name, (err, found) => {
+          if(err){
+            console.error(err);
+            cb(err);
+          }
+          if(found){
+            debug(`found in file: ${name}`);
+            cb(null, true, name);
+          } else {
+            debug(`not found in file: ${name}`);
+            cb(null, false, name);
+          }
+        });
+      }
+      if(err && err.code == 'ENOENT'){
+        console.log(`${name} not found, fetching...`);
+        return fetcher(fetcher[name], done);
+      }
+      done();
+    });
+  }, (err, result) => {
+    if(err){
+      return callback(err);
+    }
+    if(result){
+      return callback(null, result);
+    } else {
+      return callback(null, false);
+    }
+  });
+}
 hash.on('readable', () => {
   const data = hash.read();
   if(data){
-    let needle = data.toString('hex').toUpperCase();
-    console.log(`Hashed password, attempting to locate...\n${needle}`);
-    const findcb = (filename, cb, err, found) => {
-      if(err){
-        console.error(err);
-        cb(err);
-      }
-      if(found){
-        debug(`found in file: ${filename} :(`);
-        cb(null, true, filename);
-      } else {
-        debug(`not found in file: ${filename}`);
-        cb(null, false, filename);
-      }
-    };
-    const call = par ? async.filter : async.filterSeries;
-    call(filenames, (name, cb) => {
-      debug(`Searching file: ${name}`);
-      fs.stat(name, (err, stats) => {
-        const done = (err) => {
-          if(err){
-            return cb(err);
-          }
-          find(needle, name, findcb.bind(null, name, cb));
-        }
-        if(err && err.code == 'ENOENT'){
-          console.log(`${name} not found, fetching...`);
-          return fetcher(fetcher[name], done);
-        }
-        done();
-      });
-    }, (err, result) => {
+    findHash(data, (err, result) => {
       if(err){
         console.error(err);
       }
-      if(result.length){
-        console.log(`found in file ${result} :(`);
+      if(result){
+        console.log(`found in file ${result}`);
         //process.exit(1);
       } else {
         console.log('Not found, but could still be compromised');

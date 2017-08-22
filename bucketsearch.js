@@ -10,6 +10,8 @@ function checkArgs(...args){
 
 module.exports = function radixSearchSha(needle, filename, cb){
   const needleInt = parseInt(needle, 16);
+  const MAX_HASH = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
+  const EXPECTED_LOCATION = needleInt / MAX_HASH;
   fs.stat(filename, (err, stats) => {
     if(err) return cb(err);
 
@@ -36,9 +38,13 @@ module.exports = function radixSearchSha(needle, filename, cb){
           // we have exhausted the search, not found
           return cb(null, false);
         }
-        bucket = Math.max(0, Math.min(16, bucket));
+        nextBucket = Math.max(0, Math.min(16, bucket));
         let multiplier = bucket/16;
         let pos = (len - start) * multiplier + start;
+        // small optimization to target the expected location first
+        if(bucket > 0 && bucket < 1){
+          pos = end * bucket;
+        }
         pos -= pos % LINE_LENGTH;
         if(pos >= end){
           return cb(null, false);
@@ -127,7 +133,7 @@ module.exports = function radixSearchSha(needle, filename, cb){
           }
         });
       }
-      bucketSearch(0, b, end);
+      bucketSearch(0, EXPECTED_LOCATION, end);
     });
   });
 };
