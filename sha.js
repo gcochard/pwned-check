@@ -34,39 +34,40 @@ function findHash(data, callback){
   let needle = data.toString('hex').toUpperCase();
   console.log(`Hashed password, attempting to locate...\n${needle}`);
   const call = par ? async.detect : async.detectSeries;
+  let offset = 0;
   call(filenames, (name, cb) => {
     debug(`Searching file: ${name}`);
     fs.stat(name, (err, stats) => {
-      const done = (err) => {
+      const run = (err) => {
         if(err){
           return cb(err);
         }
-        find(needle, name, (err, found) => {
+        find(needle, name, (err, found, loc) => {
           if(err){
             console.error(err);
             cb(err);
           }
           if(found){
-            debug(`found in file: ${name}`);
-            cb(null, true, name);
+            debug(`found in file: ${name} at line ${loc}`);
+            offset = loc;
           } else {
             debug(`not found in file: ${name}`);
-            cb(null, false, name);
           }
+          cb(null, found);
         });
       }
       if(err && err.code == 'ENOENT'){
         console.log(`${name} not found, fetching...`);
-        return fetcher(fetcher[name], done);
+        return fetcher(fetcher[name], run);
       }
-      done();
+      run();
     });
-  }, (err, result) => {
+  }, (err, result, loc) => {
     if(err){
       return callback(err);
     }
     if(result){
-      return callback(null, result);
+      return callback(null, result, offset);
     } else {
       return callback(null, false);
     }
@@ -75,12 +76,12 @@ function findHash(data, callback){
 hash.on('readable', () => {
   const data = hash.read();
   if(data){
-    findHash(data, (err, result) => {
+    findHash(data, (err, result, loc) => {
       if(err){
         console.error(err);
       }
       if(result){
-        console.log(`found in file ${result}`);
+        console.log(`found in file ${result} at line ${loc}`);
         //process.exit(1);
       } else {
         console.log('Not found, but could still be compromised');

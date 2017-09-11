@@ -143,7 +143,7 @@ module.exports = function radixSearchSha(needle, filename, cb){
           } else {
             // ffffffffffffound!
             debug(`found after ${iterations} iterations`);
-            return cb(null, true);
+            return cb(null, true, pos / LINE_LENGTH);
           }
         });
       }
