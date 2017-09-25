@@ -81,7 +81,7 @@ hash.on('readable', () => {
         console.error(err);
       }
       if(result){
-        console.log(`found in file ${result} at line ${loc}`);
+        console.log(`found in file ${result} at line ${loc.toLocaleString()}`);
         //process.exit(1);
       } else {
         console.log('Not found, but could still be compromised');
