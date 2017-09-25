@@ -13,6 +13,13 @@
       "email": "npm@gregcochard.com"
     }
   ],
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/gcochard/pwned-check.git"
+  },
+  "bugs": {
+      "url": "https://github.com/gcochard/pwned-check/issues"
+  },
   "license": "Apache-2.0",
   "dependencies": {
     "async": "^2.5.0",
