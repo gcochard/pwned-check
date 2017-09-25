@@ -1,6 +1,6 @@
 {
   "name": "pwned-check",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Command line tool to determine if your passwords have been leaked (source data: haveibeenpwned.com)",
   "main": "sha.js",
   "scripts": {
@@ -14,11 +14,11 @@
     }
   ],
   "repository": {
-      "type": "git",
-      "url": "https://github.com/gcochard/pwned-check.git"
+    "type": "git",
+    "url": "https://github.com/gcochard/pwned-check.git"
   },
   "bugs": {
-      "url": "https://github.com/gcochard/pwned-check/issues"
+    "url": "https://github.com/gcochard/pwned-check/issues"
   },
   "license": "Apache-2.0",
   "dependencies": {
