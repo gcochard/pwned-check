@@ -1,13 +1,18 @@
 {
   "name": "pwned-check",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Command line tool to determine if your passwords have been leaked (source data: haveibeenpwned.com)",
   "main": "sha.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Google Inc.",
-  "contributors": [{"name":"Greg Cochard", "email": "npm@gregcochard.com"}],
+  "contributors": [
+    {
+      "name": "Greg Cochard",
+      "email": "npm@gregcochard.com"
+    }
+  ],
   "license": "Apache-2.0",
   "dependencies": {
     "async": "^2.5.0",
