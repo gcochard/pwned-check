@@ -2,7 +2,10 @@
   "name": "pwned-check",
   "version": "1.1.2",
   "description": "Command line tool to determine if your passwords have been leaked (source data: haveibeenpwned.com)",
-  "main": "sha.js",
+  "main": "index.js",
+  "bin": {
+    "pwned-check": "./sha.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

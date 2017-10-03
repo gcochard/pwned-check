@@ -13,9 +13,12 @@ whopping 5.6GB compressed. When uncompressed, they are 13.5GB. The files will be
 downloaded to the present working directory you are in. The only hard dependency
 is the `7z` binary in your `PATH`.
 
-You can run it in one of two ways. Scripted and Interactive. Interactive is
-recommended to avoid having your password entered in scripts, in your shell
-history, and in the process listing in ps/top/etc.
+You can run it in three ways. Scripted, programmatically, and interactive.
+Interactive is recommended to avoid having your password entered in scripts, in
+your shell history, and in the process listing in ps/top/etc. If you have many
+passwords to check, you can use it programmatically and loop over your
+passwords. Interactive mode prompts you for a password to enter, masks it as you
+enter it, hashes/searches, and prints the result.
 
 It will perform a radix based search through the files to determine if the hash
 is included in the dump files as the files are sorted and the lines are fixed
