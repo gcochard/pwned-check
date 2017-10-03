@@ -67,7 +67,7 @@ if(process.argv.length > 2 && process.argv[2]){
         process.stdout.write('\n');
         return next(new Error('cancelled'));
       }
-      if(charcode == 127){
+      if(charcode == 0x7F || charcode == 0x08){
         // remove the char from the buffer
         hashBuf = hashBuf.slice(0, -1);
         // and remove the * from the terminal
