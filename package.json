@@ -1,6 +1,6 @@
 {
   "name": "pwned-check",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Command line tool to determine if your passwords have been leaked (source data: haveibeenpwned.com)",
   "main": "index.js",
   "bin": {
