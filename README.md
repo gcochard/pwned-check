@@ -20,6 +20,9 @@ passwords to check, you can use it programmatically and loop over your
 passwords. Interactive mode prompts you for a password to enter, masks it as you
 enter it, hashes/searches, and prints the result.
 
+You can also run it with `npx`, simply use `npx pwned-check`. If you have `npm`
+version 5 or later, you already have `npx`.
+
 It will perform a radix based search through the files to determine if the hash
 is included in the dump files as the files are sorted and the lines are fixed
 length hexidecimal strings, and the distribution is close to unform. This is
