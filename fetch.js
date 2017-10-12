@@ -17,6 +17,8 @@ const request = require('request');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const downloadPath = path.join(process.env.HOME, '.config', 'pwned-check');
+const makeDir = require('make-dir');
 const { spawn } = require('child_process');
 const lists = ['https://downloads.pwnedpasswords.com/passwords/pwned-passwords-1.0.txt.7z', 'https://downloads.pwnedpasswords.com/passwords/pwned-passwords-update-1.txt.7z', 'https://downloads.pwnedpasswords.com/passwords/pwned-passwords-update-2.txt.7z'];
 const unzipCmds = {
@@ -26,9 +28,10 @@ const unzipCmds = {
 const platform = os.platform();
 // default to linux
 const unzipCmd = unzipCmds[platform] || unzipCmds.linux;
+makeDir.sync(downloadPath);
 const fetcher = (listUrl, cb) => {
-  const filename = path.basename(listUrl);
-  const decompressed = path.basename(filename, path.extname(filename));
+  const filename = path.join(downloadPath, path.basename(listUrl));
+  const decompressed = path.join(downloadPath, path.basename(filename, path.extname(filename)));
   fs.stat(decompressed, (err, stats) => {
     if(!err || err.code != 'ENOENT'){
       console.log(`${decompressed} exists, skipping download and decompression`);
@@ -102,4 +105,5 @@ fetcher.lists = {};
 lists.forEach(list => {
   fetcher.lists[path.basename(list)] = list;
 });
+fetcher.path = downloadPath;
 module.exports = fetcher;

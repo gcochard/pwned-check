@@ -13,12 +13,15 @@
 // limitations under the License.
 
 const fs = require('fs');
+const path = require('path');
 const tty = require('tty');
 const async = require('async');
 const crypto = require('crypto');
 const fetcher = require('./fetch.js');
+const downloadPath = fetcher.path;
 const find = require('./bucketsearch.js');
-const debug = require('util').debuglog('main');
+const util = require('util');
+const debug = util.debuglog('main');
 
 let str = '';
 let filenames = ['pwned-passwords-1.0.txt','pwned-passwords-update-1.txt','pwned-passwords-update-2.txt'];
@@ -35,29 +38,30 @@ function findHash(data, callback){
   const call = par ? async.detect : async.detectSeries;
   let offset = 0;
   call(filenames, (name, cb) => {
-    debug(`Searching file: ${name}`);
-    fs.stat(name, (err, stats) => {
+    let filename = path.join(downloadPath, name);
+    debug(`Searching file: ${filename}`);
+    fs.stat(filename, (err, stats) => {
       const run = (err) => {
         if(err){
           return cb(err);
         }
-        find(needle, name, (err, found, loc) => {
+        find(needle, filename, (err, found, loc) => {
           if(err){
             console.error(err);
             cb(err);
           }
           if(found){
-            debug(`found in file: ${name} at line ${loc}`);
+            debug(`found in file: ${filename} at line ${loc}`);
             offset = loc;
           } else {
-            debug(`not found in file: ${name}`);
+            debug(`not found in file: ${filename}`);
           }
           cb(null, found);
         });
       }
       if(err && err.code == 'ENOENT'){
-        console.log(`${name} not found, fetching...`);
-        return fetcher(fetcher[name], run);
+        console.log(`${filename} not found, fetching...`);
+        return fetcher(fetcher.lists[`${name}.7z`], run);
       }
       run();
     });
