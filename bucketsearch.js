@@ -16,7 +16,7 @@ const fs = require('fs');
 const HASH_SIZE = 40;
 const LINE_LENGTH = 42;
 const buckets = '01234567890ABCDEF'.split('');
-debug = require('util').debuglog('search');
+const debug = require('util').debuglog('search');
 
 function checkArgs(...args){
   return args.some(num=>{ return num < 0; });
@@ -52,8 +52,8 @@ module.exports = function radixSearchSha(needle, filename, cb){
           // we have exhausted the search, not found
           return cb(null, false);
         }
-        nextBucket = Math.max(0, Math.min(16, bucket));
-        let multiplier = bucket/16;
+        let nextBucket = Math.max(0, Math.min(16, bucket));
+        let multiplier = nextBucket/16;
         let pos = (len - start) * multiplier + start;
         // small optimization to target the expected location first
         if(bucket > 0 && bucket < 1){
@@ -67,11 +67,10 @@ module.exports = function radixSearchSha(needle, filename, cb){
         let buf = Buffer.alloc(HASH_SIZE);
         iterations++;
         // read HASH_SIZE bytes from pos, to make sure we have a complete hash
-        fs.read(fd, buf, 0, HASH_SIZE, pos, (err, bytesRead/*, buf */) => {
+        fs.read(fd, buf, 0, HASH_SIZE, pos, (err/*, bytesRead, buf */) => {
           let currHash = buf.toString();
           if(visited[currHash]){
             debug(`${filename}: loop detected`);
-            console.log(`${filename}: loop detected`);
           }
           visited[currHash] = true;
           debug(`${filename} - pos: ${pos}\ncurrent hash: ${currHash}`);
