@@ -1,11 +1,11 @@
 {
   "name": "pwned-check",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "Command line tool to determine if your passwords have been leaked (source data: haveibeenpwned.com)",
   "main": "index.js",
   "bin": "./sha.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "eslint": "eslint *.js"
   },
   "author": "Google Inc.",
   "contributors": [
@@ -29,8 +29,5 @@
   },
   "devDependencies": {
     "eslint": "^4.11.0"
-  },
-  "scripts": {
-    "eslint": "eslint *.js"
   }
 }
