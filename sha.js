@@ -17,12 +17,16 @@ const fs = require('fs');
 const tty = require('tty');
 const async = require('async');
 const crypto = require('crypto');
-const fetcher = require('./fetch.js');
 const debug = require('util').debuglog('main');
-const {findHash, hashAndFind} = require('./index.js');
+const {findHash, hashAndFind, setFindStrategy} = require('./index');
+const yargs = require('yargs');
+const args = yargs.boolean('web').argv;
+if(args.web){
+  setFindStrategy('web-range');
+}
 
-if(process.argv.length > 2 && process.argv[2]){
-  hashAndFind(process.argv[2], function(err, result, loc){
+if(args._.length && args._){
+  hashAndFind(args._[0], function(err, result, loc){
     if(err){
       console.error(err);
     }

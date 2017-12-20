@@ -17,9 +17,11 @@ const path = require('path');
 const tty = require('tty');
 const async = require('async');
 const crypto = require('crypto');
-const fetcher = require('./fetch.js');
+const fetcher = require('./fetch');
 const downloadPath = fetcher.path;
-const find = require('./bucketsearch.js');
+const findFactory = require('./bucketsearch');
+var strategy = 'local';
+var find = findFactory('local');
 const util = require('util');
 const debug = util.debuglog('main');
 
@@ -32,6 +34,11 @@ if(par){
   debug('running in series');
 }
 
+function setFindStrategy(strat){
+  find = findFactory(strat);
+  strategy = strat;
+}
+
 function findHash(data, callback){
   let needle = data.toString('hex').toUpperCase();
   console.log(`Hashed password, attempting to locate...\n${needle}`);
@@ -40,31 +47,47 @@ function findHash(data, callback){
   call(filenames, (name, cb) => {
     let filename = path.join(downloadPath, name);
     debug(`Searching file: ${filename}`);
-    fs.stat(filename, (err, stats) => {
-      const run = (err) => {
-        if(err){
-          return cb(err);
-        }
-        find(needle, filename, (err, found, loc) => {
+    if(strategy == 'local'){
+      fs.stat(filename, (err, stats) => {
+        const run = (err) => {
           if(err){
-            console.error(err);
-            cb(err);
+            return cb(err);
           }
-          if(found){
-            debug(`found in file: ${filename} at line ${loc}`);
-            offset = loc;
-          } else {
-            debug(`not found in file: ${filename}`);
-          }
-          cb(null, found);
-        });
-      }
-      if(err && err.code == 'ENOENT'){
-        console.log(`${filename} not found, fetching...`);
-        return fetcher(fetcher.lists[`${name}.7z`], run);
-      }
-      run();
-    });
+          find(needle, filename, (err, found, loc) => {
+            if(err){
+              console.error(err);
+              cb(err);
+            }
+            if(found){
+              debug(`found in file: ${filename} at line ${loc}`);
+              offset = loc;
+            } else {
+              debug(`not found in file: ${filename}`);
+            }
+            cb(null, found);
+          });
+        }
+        if(err && err.code == 'ENOENT'){
+          console.log(`${filename} not found, fetching...`);
+          return fetcher(fetcher.lists[`${name}.7z`], run);
+        }
+        run();
+      });
+    } else if(strategy == 'web-range'){
+      find(needle, filename, (err, found, loc) => {
+        if(err){
+          console.error(err);
+          cb(err);
+        }
+        if(found){
+          debug(`found in file: ${filename} at line ${loc}`);
+          offset = loc;
+        } else {
+          debug(`not found in file: ${filename}`);
+        }
+        cb(null, found);
+      });
+    }
   }, (err, result, loc) => {
     if(err){
       return callback(err);
@@ -100,4 +123,4 @@ function hashAndFind(password, callback){
   hash.end();
 }
 
-module.exports = { hashAndFind, findHash };
+module.exports = { hashAndFind, findHash, setFindStrategy };

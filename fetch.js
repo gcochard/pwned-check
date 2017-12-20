@@ -21,6 +21,8 @@ const downloadPath = path.join(process.env.HOME, '.config', 'pwned-check');
 const makeDir = require('make-dir');
 const { spawn } = require('child_process');
 const lists = ['https://downloads.pwnedpasswords.com/passwords/pwned-passwords-1.0.txt.7z', 'https://downloads.pwnedpasswords.com/passwords/pwned-passwords-update-1.txt.7z', 'https://downloads.pwnedpasswords.com/passwords/pwned-passwords-update-2.txt.7z'];
+const gcsListPrefix = 'https://storage.googleapis.com/pwned-password-hash-list/';
+const gcsLists = ['pwned-passwords-1.0.txt','pwned-passwords-update-1.txt','pwned-passwords-update-2.txt'].map((i,e)=>{ return `${gcsListPrefix}${e}`; });
 const unzipCmds = {
   'darwin': {binary:'7z', args:['x', '-y']},
   'linux': {binary:'p7zip', args:['-d']}
@@ -106,4 +108,5 @@ lists.forEach(list => {
   fetcher.lists[path.basename(list)] = list;
 });
 fetcher.path = downloadPath;
+fetcher.gcsPrefix = gcsListPrefix;
 module.exports = fetcher;

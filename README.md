@@ -13,6 +13,14 @@ whopping 5.6GB compressed. When uncompressed, they are 13.5GB. The files will be
 downloaded to the present working directory you are in. The only hard dependency
 is the `7z` binary in your `PATH`.
 
+If you don't care about your privacy and are okay with the tool making some
+range requests, you can add the `--web` flag, which will hit a GCS bucket
+with 40byte range requests until an exhaustive search is done. This will have
+an upper bound of 40 requests across 3 files to determine if the hash is in
+the list or not. You could just run the hash against the HIBP Passwords API
+though, so it's somewhat pointless to use this unless you trust a GCS bucket
+more than the HIBP website.
+
 You can run it in three ways. Scripted, programmatically, and interactive.
 Interactive is recommended to avoid having your password entered in scripts, in
 your shell history, and in the process listing in ps/top/etc. If you have many
