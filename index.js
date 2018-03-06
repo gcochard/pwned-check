@@ -12,91 +12,49 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const fs = require('fs');
-const path = require('path');
-const tty = require('tty');
-const async = require('async');
 const crypto = require('crypto');
-const fetcher = require('./fetch');
-const downloadPath = fetcher.path;
-const findFactory = require('./bucketsearch');
-var strategy = 'local';
-var find = findFactory('local');
 const util = require('util');
+const request = require('request');
 const debug = util.debuglog('main');
+const apiPrefix = 'https://api.pwnedpasswords.com/range';
 
-let str = '';
-let filenames = ['pwned-passwords-1.0.txt','pwned-passwords-update-1.txt','pwned-passwords-update-2.txt'];
-const par = (process.env.NODE_DEBUG||'').indexOf('par') < 0;
-if(par){
-  debug('running in parallel');
-} else {
-  debug('running in series');
+function sha1p(value){
+  let hash = value;
+  let prefix = hash.substring(0,5);
+  let rest = hash.substring(5,40);
+  return [prefix, rest];
 }
 
-function setFindStrategy(strat){
-  find = findFactory(strat);
-  strategy = strat;
+function find(needle, callback){
+  let [prefix, rest] = sha1p(needle);
+  request(`${apiPrefix}/${prefix}`, (err, res, list) => {
+
+    for(let line of list.split('\n')){
+      line = line.trim();
+      if(line.split(':')[0] == rest){
+        debug('test');
+        debug(line);
+        let count = line.split(':')[1].trim();
+        debug(`line: "${line}", rest: ${rest}, count: ${count}`)
+        return callback(null, true, count);
+      }
+    }
+    return callback(null, false);
+  });
 }
 
 function findHash(data, callback){
   let needle = data.toString('hex').toUpperCase();
   console.log(`Hashed password, attempting to locate...\n${needle}`);
-  const call = par ? async.detect : async.detectSeries;
-  let offset = 0;
-  call(filenames, (name, cb) => {
-    let filename = path.join(downloadPath, name);
-    debug(`Searching file: ${filename}`);
-    if(strategy == 'local'){
-      fs.stat(filename, (err, stats) => {
-        const run = (err) => {
-          if(err){
-            return cb(err);
-          }
-          find(needle, filename, (err, found, loc) => {
-            if(err){
-              console.error(err);
-              cb(err);
-            }
-            if(found){
-              debug(`found in file: ${filename} at line ${loc}`);
-              offset = loc;
-            } else {
-              debug(`not found in file: ${filename}`);
-            }
-            cb(null, found);
-          });
-        }
-        if(err && err.code == 'ENOENT'){
-          console.log(`${filename} not found, fetching...`);
-          return fetcher(fetcher.lists[`${name}.7z`], run);
-        }
-        run();
-      });
-    } else if(strategy == 'web-range'){
-      find(needle, filename, (err, found, loc) => {
-        if(err){
-          console.error(err);
-          cb(err);
-        }
-        if(found){
-          debug(`found in file: ${filename} at line ${loc}`);
-          offset = loc;
-        } else {
-          debug(`not found in file: ${filename}`);
-        }
-        cb(null, found);
-      });
-    }
-  }, (err, result, loc) => {
+  find(needle, (err, found, times) => {
     if(err){
+      console.error(err);
       return callback(err);
     }
-    if(result){
-      return callback(null, result, offset);
-    } else {
-      return callback(null, false);
+    if(found){
+      return callback(null, found, times);
     }
+    return callback(null, found);
   });
 }
 
@@ -105,13 +63,13 @@ function hashAndFind(password, callback){
   hash.on('readable', () => {
     const data = hash.read();
     if(data){
-      findHash(data, (err, result, loc) => {
+      findHash(data, (err, result, times) => {
         if(err){
           console.error(err);
         }
         if(result){
-          debug(`found in file ${result} at line ${loc.toLocaleString()}`);
-          callback(null, result, loc);
+          debug(`Pwned ${times} times! Consider changing the password!`);
+          callback(null, result, times);
         } else {
           debug('Not found, but could still be compromised');
           callback(null, false);
@@ -123,4 +81,4 @@ function hashAndFind(password, callback){
   hash.end();
 }
 
-module.exports = { hashAndFind, findHash, setFindStrategy };
+module.exports = { hashAndFind, findHash };

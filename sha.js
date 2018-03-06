@@ -13,25 +13,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const fs = require('fs');
-const tty = require('tty');
 const async = require('async');
 const crypto = require('crypto');
 const debug = require('util').debuglog('main');
-const {findHash, hashAndFind, setFindStrategy} = require('./index');
+const {findHash, hashAndFind } = require('./index');
 const yargs = require('yargs');
-const args = yargs.boolean('web').argv;
-if(args.web){
-  setFindStrategy('web-range');
-}
+const args = yargs.argv;
 
 if(args._.length && args._){
-  hashAndFind(args._[0], function(err, result, loc){
+  hashAndFind(args._[0], function(err, result, times){
     if(err){
       console.error(err);
     }
     if(result){
-      console.log(`found in file ${result} at line ${loc.toLocaleString()}`);
+      console.log(`Pwned ${times} times!`);
       //process.exit(1);
     } else {
       console.log('Not found, but could still be compromised');
@@ -44,13 +39,13 @@ if(args._.length && args._){
     hash.on('readable', () => {
       const data = hash.read();
       if(data){
-        findHash(data, (err, result, loc) => {
+        findHash(data, (err, result, times) => {
           if(err){
             console.error(err);
             next(err);
           }
           if(result){
-            console.log(`found in file ${result} at line ${loc.toLocaleString()}`);
+            console.log(`\rfound ${times} times!`);
           } else {
             console.log('Not found, but could still be compromised');
           }
