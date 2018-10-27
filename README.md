@@ -2,14 +2,15 @@ pwned-check
 ===========
 
 Note: This project is deprecated, and you can now use my pwned-alert usercript
-located [here](https://github.gregcochard.com/pwned-check/pwned-alert.user.js)
-to check live in your browser against the v2 API which uses [k-anonymity](https://www.troyhunt.com/enhancing-pwned-passwords-privacy-by-exclusively-supporting-anonymity/) making it faster and easier to use.
+located [here][userscript] to check live in your browser against the 
+[v2 API][api] which uses [k-anonymity][k-anonymity-ref] making it faster and
+easier to use.
 
 Original readme follows:
 
 This project is a way for you to verify your passwords have not been included in
 Troy Hunt's Have I Been Pwned password lists. If you want to try it out, you can
-head over to [the website](https://haveibeenpwned.com/Passwords) and enter a
+head over to [the website][website] and enter a
 password there. If you are concerned about sending passwords to a third-party
 site, and still want to verify that your password has not been leaked (yet), you
 can use this tool instead.
@@ -46,3 +47,8 @@ Disclaimer: This is not an official Google project.
 Apache Version 2.0
 
 See [LICENSE](LICENSE)
+
+[api]: https://haveibeenpwned.com/API/v2
+[userscript]: https://github.gregcochard.com/pwned-check/pwned-alert.user.js
+[k-anonymity-ref]: https://www.troyhunt.com/enhancing-pwned-passwords-privacy-by-exclusively-supporting-anonymity/
+[website]: https://haveibeenpwned.com/Passwords
