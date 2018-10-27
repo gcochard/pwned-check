@@ -1,6 +1,12 @@
 pwned-check
 ===========
 
+Note: This project is deprecated, and you can now use my pwned-alert usercript
+located [here](https://github.gregcochard.com/pwned-check/pwned-alert.user.js)
+to check live in your browser against the v2 API which uses [k-anonymity](https://www.troyhunt.com/enhancing-pwned-passwords-privacy-by-exclusively-supporting-anonymity/) making it faster and easier to use.
+
+Original readme follows:
+
 This project is a way for you to verify your passwords have not been included in
 Troy Hunt's Have I Been Pwned password lists. If you want to try it out, you can
 head over to [the website](https://haveibeenpwned.com/Passwords) and enter a
