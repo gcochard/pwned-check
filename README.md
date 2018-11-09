@@ -30,14 +30,18 @@ enter it, hashes/searches, and prints the result.
 You can also run it with `npx`, simply use `npx pwned-check`. If you have `npm`
 version 5 or later, you already have `npx`.
 
-It will perform a radix based search through the files to determine if the hash
-is included in the dump files as the files are sorted and the lines are fixed
-length hexidecimal strings, and the distribution is close to unform. This is
-more efficient than a binary search, as it perform `O(log16(n))` comparisons.
-Note that it does not construct a radix tree, so it is less efficient in the
-search, with the tradeoff that there is no lengthy preproccessing required to
-build the tree. Also note that this is only possible because the files are
-already sorted.
+It will perform a modified [linear interpolation search][wiki] through the
+files to determine if the hash is included in the dump files as the files are
+sorted and the lines are fixed length hexidecimal strings, and the distribution
+is close to unform. This is more efficient than a binary search over an
+extremely large dataset, as it perform strictly fewer than `16*40` disk seeks
+in the worst case, but on average roughly 80 seeks.
+
+The number of hashes necessary to make this more efficient than a trivial
+binary search algorithm is roughly 2^80, which is smaller than the keyspace
+of sha1, but much greater than the size of the pwned password set. This makes
+the search algorithm only of academic interest for all but the largest
+datasets.
 
 
 Disclaimer: This is not an official Google project.
@@ -52,3 +56,4 @@ See [LICENSE](LICENSE)
 [userscript]: https://github.gregcochard.com/pwned-check/pwned-alert.user.js
 [k-anonymity-ref]: https://www.troyhunt.com/enhancing-pwned-passwords-privacy-by-exclusively-supporting-anonymity/
 [website]: https://haveibeenpwned.com/Passwords
+[wiki]: https://en.wikipedia.org/wiki/Interpolation_search
