@@ -4,7 +4,9 @@ pwned-check
 Note: This project is deprecated, and you can now use my pwned-alert usercript
 located [here][userscript] to check live in your browser against the 
 [v2 API][api] which uses [k-anonymity][k-anonymity-ref] making it faster and
-easier to use.
+easier to use. It will detect any password fields on a page, and on blur, it
+will send the hash prefix to the service and compare the results, popping an
+alert() with the number of compromises if a match is found.
 
 Original readme follows:
 
